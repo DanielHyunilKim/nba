@@ -1,5 +1,5 @@
 from games.api_services import download_game_logs, download_players
-from games.db_services import handle_game_logs, handle_players, handle_fantasy_projections, handle_league_avg_9_cat, handle_projection_values
+from games.db_services import handle_game_logs, handle_players, handle_fantasy_projections, handle_league_avg_9_cat, handle_projection_values, handle_fantasy_players, handle_season_averages
 from games.projection_services import simple_regression
 from celery import shared_task
 from games.models import RawGameLog
@@ -44,3 +44,15 @@ def populate_league_avgs_task(season="2023-24"):
 @shared_task()
 def populate_projection_value(season="2023-24"):
     handle_projection_values(season)
+
+
+@shared_task()
+def populate_season_averages(season="2023-24"):
+    player_ids = RawGameLog.objects.filter(season_year=season).values_list('player_id', flat=True).distinct()
+    handle_season_averages(player_ids, season)
+
+
+@shared_task()
+def populate_fantasy_players(season="2023-24"):
+    player_ids = RawGameLog.objects.filter(season_year=season).values_list('player_id', flat=True).distinct()
+    handle_fantasy_players(season)

@@ -162,3 +162,15 @@ class ProjectionValue(TimeStampedModel):
     tov_val = models.FloatField()
     total_val = models.FloatField()
     projection_accuracy = models.FloatField()
+
+
+class FantasyTeam(models.Model):
+    team_name = models.CharField(max_length=50)
+    season_year = models.CharField(max_length=10)
+
+
+class FantasyPlayer(models.Model):
+    player_id = models.ForeignKey(RawPlayer, on_delete=models.CASCADE)
+    player_name = models.CharField(max_length=50)
+    season_year = models.CharField(max_length=10)
+    fantasy_team = models.ForeignKey(FantasyTeam, on_delete=models.SET_NULL, null=True)

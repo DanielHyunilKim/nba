@@ -1,0 +1,59 @@
+{% load static %}
+<html>
+<head>
+    <title>NBA Fantasy 2024-25</title>
+    <link rel="stylesheet" type="text/css" href="{% static "games/css/style.css" %}" />
+</head>
+<table>
+    <thead>
+        <tr>
+            {% if page_obj %}
+                {% for key, value in page_obj.object_list.0.items %}
+                    <th>
+                        <a href="?sort={{ key }}&direction={% if sort_by == key and direction == 'asc' %}desc{% else %}asc{% endif %}">
+                            {{ key }}
+                            {% if sort_by == key %}
+                                {% if direction == 'asc' %}
+                                    &uarr;  <!-- Up arrow for ascending -->
+                                {% else %}
+                                    &darr;  <!-- Down arrow for descending -->
+                                {% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
+                {% endfor %}
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for player in page_obj %}
+            <tr>
+                {% for key, value in player.items %}
+                    <td>
+                        {{ value }}
+                    </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Pagination controls -->
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1&sort={{ sort_by }}&direction={{ direction }}">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}&sort={{ sort_by }}&direction={{ direction }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&sort={{ sort_by }}&direction={{ direction }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}&sort={{ sort_by }}&direction={{ direction }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+</html>
