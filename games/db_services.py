@@ -344,8 +344,8 @@ def handle_projection_values(season_year: str):
 
     projection_val_objs = [
         ProjectionValue(
-            season_year = row['season_year'],
-            player_id = row['player_id'],
+            season_year=row['season_year'],
+            player_id=RawPlayer.objects.get(person_id=row['player_id_id']),
             pts_val=row['pts_val'],
             fg3m_val=row['fg3m_val'],
             reb_val=row['reb_val'],
@@ -378,7 +378,7 @@ def ft_val_func(row, league_avg):
     ft_pct = row['ftm'] / row['fta']
     ft_pct = min(max(0, ft_pct), 1)
     raw_val = ft_pct - league_avg.avg_ft_pct
-    multiplier = (row['fta'] - league_avg.avg_fta) / league_avg.std_fta * 10
+    multiplier = (row['fta'] - league_avg.avg_fta) / league_avg.std_fta * 7
     if multiplier > 0:
         return raw_val * (1 + multiplier)
     else:

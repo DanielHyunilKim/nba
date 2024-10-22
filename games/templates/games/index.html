@@ -1,0 +1,73 @@
+{% load static %}
+<html>
+    <head>
+        <title>NBA Projections 2024-25</title>
+        <link rel="stylesheet" type="text/css" href="{% static "games/css/style.css" %}" />
+    </head>
+    <table>
+        <tr>
+            <th>season_year</th>
+            <th>player_name</th>
+            <th>min</th>
+            <th>pts</th>
+            <th>fg3m</th>
+            <th>reb</th>
+            <th>ast</th>
+            <th>stl</th>
+            <th>blk</th>
+            <th>fgm</th>
+            <th>fga</th>
+            <th>ftm</th>
+            <th>fta</th>
+            <th>tov</th>
+            <th>usg_pct</th>
+            <th>pts_val</th>
+            <th>fg3m_val</th>
+            <th>reb_val</th>
+            <th>ast_val</th>
+            <th>stl_val</th>
+            <th>blk_val</th>
+            <th>fg_pct_val</th>
+            <th>ft_pct_val</th>
+            <th>tov_val</th>
+            <th>total_val</th>
+
+        </tr>
+        {% for projection in page_obj %}
+        <tr>
+            <th> {{ projection.season_year}}</th>
+            <th> {{ projection.player_id.player_first_name }} {{ projection.player_id.player_last_name }}</th>
+            <th> {{ projection.min|floatformat:2 }}</th>
+            <th> {{ projection.pts|floatformat:2 }}</th>
+            <th> {{ projection.fg3m|floatformat:2 }}</th>
+            <th> {{ projection.reb|floatformat:2 }}</th>
+            <th> {{ projection.ast|floatformat:2 }}</th>
+            <th> {{ projection.stl|floatformat:2 }}</th>
+            <th> {{ projection.blk|floatformat:2 }}</th>
+            <th> {{ projection.fgm|floatformat:2 }}</th>
+            <th> {{ projection.fga|floatformat:2 }}</th>
+            <th> {{ projection.ftm|floatformat:2 }}</th>
+            <th> {{ projection.fta|floatformat:2 }}</th>
+            <th> {{ projection.tov|floatformat:2 }}</th>
+            <th> {{ projection.usg_pct|floatformat:2 }}</th>
+        </tr>
+        {% endfor %}
+    </table>
+    <div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+</html>

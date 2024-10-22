@@ -3,7 +3,7 @@ from django_extensions.db.models import TimeStampedModel
 
 
 class RawPlayer(TimeStampedModel):
-    person_id = models.IntegerField()  # 201144
+    person_id = models.IntegerField(primary_key=True)  # 201144
     player_last_name = models.CharField(max_length=50)  # "Conley"
     player_first_name = models.CharField(max_length=50)  # "Mike"
     player_slug = models.CharField(max_length=50)  # "mike-conley"
@@ -32,7 +32,7 @@ class RawPlayer(TimeStampedModel):
 class RawGameLog(TimeStampedModel):
     # shared
     season_year = models.CharField(max_length=10)  # "2023-24"
-    player_id = models.IntegerField()  # 201144
+    player_id = models.ForeignKey(RawPlayer, on_delete=models.CASCADE)  # 201144
     player_name = models.CharField(max_length=50)  # "Mike Conley"
     nickname = models.CharField(max_length=50)  # "Mike"
     team_id = models.IntegerField()  # 1610612750
@@ -99,7 +99,7 @@ class RawGameLog(TimeStampedModel):
 
 class FantasyProjection(TimeStampedModel):
     season_year = models.CharField(max_length=10)
-    player_id = models.IntegerField()
+    player_id = models.ForeignKey(RawPlayer, on_delete=models.CASCADE)
     min = models.FloatField()
     pts = models.FloatField()
     fg3m = models.FloatField()
@@ -150,7 +150,7 @@ class LeagueAverage9Cat(TimeStampedModel):
 
 class ProjectionValue(TimeStampedModel):
     season_year = models.CharField(max_length=10)
-    player_id = models.IntegerField()
+    player_id = models.ForeignKey(RawPlayer, on_delete=models.CASCADE)
     pts_val = models.FloatField()
     fg3m_val = models.FloatField()
     reb_val = models.FloatField()
