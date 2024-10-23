@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from games.models import FantasyProjection, ProjectionValue, RawGameLog
+from games.models import FantasyProjection, ProjectionValue, RawGameLog, FantasyTeam
 from django.core.paginator import Paginator
 import pandas as pd
 
@@ -109,6 +109,9 @@ def fantasy(request):
 
 def fantasy_matchup(request):
     season_year = '2023-24'
+    week = 1
+    team_1 = FantasyTeam.get(team_name='Slam Dunkin')
+    team_2 = FantasyTeam.get(team_name='Kawhi Baby')
 
     team_1 = {
         'Donovan Mitchell': 3,

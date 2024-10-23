@@ -1,5 +1,6 @@
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
+from django.contrib.postgres.fields import ArrayField
 
 
 class RawPlayer(TimeStampedModel):
@@ -142,3 +143,28 @@ class ProjectionValue(TimeStampedModel):
     tov_val = models.FloatField()
     total_val = models.FloatField()
     projection_accuracy = models.FloatField()
+
+
+class Game(TimeStampedModel):
+    season_year = models.CharField(max_length=10)
+    week_number = models.IntegerField()
+    game_date = models.CharField()
+    home_team = models.CharField()
+    home_team_id = models.IntegerField()
+    away_team = models.CharField()
+    away_team_id = models.IntegerField()
+
+
+class FantasyTeam(TimeStampedModel):
+    team_name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.team_name
+
+
+class FantasyPlayer(TimeStampedModel):
+    fantasy_team = models.ForeignKey(FantasyTeam, null=True, on_delete=models.CASCADE)
+    player = models.ForeignKey(RawPlayer, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.player.player_first_name} {self.player.player_last_name}"

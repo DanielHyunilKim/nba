@@ -1,5 +1,11 @@
-from games.api_services import download_game_logs, download_players
-from games.db_services import handle_game_logs, handle_players, handle_fantasy_projections, handle_projection_values
+from games.api_services import download_game_logs, download_players, download_schedule
+from games.db_services import (
+    handle_game_logs,
+    handle_players,
+    handle_fantasy_projections,
+    handle_projection_values,
+    handle_schedule,
+)
 from games.projection_services import simple_regression
 from celery import shared_task
 from games.models import RawGameLog
@@ -18,9 +24,15 @@ def populate_raw_players_task(season="2024-25", historical=1):
 
 
 @shared_task()
-def populate_raw_game_logs_task(season="2023-24", date_from=None, date_to=None):
+def populate_raw_game_logs_task(season="2024-25", date_from=None, date_to=None):
     traditional, advanced = download_game_logs(season, date_from, date_to)
     handle_game_logs(traditional, advanced)
+
+
+@shared_task()
+def populate_schedule(season="2024-25"):
+    schedule = download_schedule(season)
+    handle_schedule(schedule)
 
 
 @shared_task()

@@ -1,5 +1,5 @@
 from django.db import transaction
-from games.models import RawPlayer, RawGameLog, FantasyProjection, ProjectionValue
+from games.models import RawPlayer, RawGameLog, FantasyProjection, ProjectionValue, Game
 import pandas as pd
 from tqdm import tqdm
 import numpy as np
@@ -254,6 +254,31 @@ def validate_gamelog_json(traditional, advanced) -> bool:
 
     return True
 
+
+def handle_schedule(schedule_json):
+    season_year = schedule_json['leagueSchedule']['seasonYear']
+    game_dates = schedule_json['leagueSchedule']['gameDates']
+
+    games = []
+    for game_date in game_dates:
+        for game in game_date['games']:
+            games.append(game)
+
+    schedule_objs = [
+        Game(
+            season_year=season_year,
+            week_number=game['weekNumber'],
+            game_date=game['gameDateEst'],
+            home_team=game['homeTeam']['teamTricode'],
+            home_team_id=game['homeTeam']['teamId'],
+            away_team=game['awayTeam']['teamTricode'],
+            away_team_id=game['awayTeam']['teamId'],
+        )
+        for game in tqdm(games)
+    ]
+
+    with transaction.atomic():
+        Game.objects.bulk_create(schedule_objs, batch_size=1000)
 
 def handle_fantasy_projections(nine_cat_list):
 
