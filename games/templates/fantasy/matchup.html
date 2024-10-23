@@ -1,0 +1,54 @@
+<html>
+<head>
+    <title>NBA Fantasy Matchup</title>
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+</head>
+<div class="table-responsive">
+    <table class="table table-bordere table-striped table-hover">
+        <thead class="table-light">
+            <tr>
+                {% for key, value in team_1.0.items %}
+                <th>
+                    {{ key }}
+                </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for player in team_1 %}
+                <tr>
+                   {% for key, value in player.items %}
+                        <td>
+                            {{ value }}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <table class="table table-bordere table-striped table-hover">
+        <thead class="table-light">
+            <tr>
+                {% for key, value in team_2.0.items %}
+                <th>
+                    {{ key }}
+                </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for player in team_2 %}
+                <tr>
+                   {% for key, value in player.items %}
+                        <td>
+                            {{ value }}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</html>

@@ -1,9 +1,8 @@
 from django.db import transaction
-from games.models import RawPlayer, RawGameLog, FantasyProjection, LeagueAverage9Cat, ProjectionValue
+from games.models import RawPlayer, RawGameLog, FantasyProjection, ProjectionValue
 import pandas as pd
 from tqdm import tqdm
 import numpy as np
-from django.db.models import Avg, StdDev, Sum
 
 
 from logging import getLogger
@@ -283,40 +282,8 @@ def handle_fantasy_projections(nine_cat_list):
         FantasyProjection.objects.bulk_create(fantasy_projection_objs, batch_size=1000)
 
 
-def handle_league_avg_9_cat(season_year: str):
-    games = RawGameLog.objects.filter(season_year=season_year, min__gte=20)
-    LeagueAverage9Cat(
-        season_year=season_year,
-        avg_pts=games.aggregate(Avg('pts'))['pts__avg'],
-        avg_fg3m=games.aggregate(Avg('fg3m'))['fg3m__avg'],
-        avg_reb=games.aggregate(Avg('reb'))['reb__avg'],
-        avg_ast=games.aggregate(Avg('ast'))['ast__avg'],
-        avg_stl=games.aggregate(Avg('stl'))['stl__avg'],
-        avg_blk=games.aggregate(Avg('blk'))['blk__avg'],
-        avg_fg_pct=games.aggregate(Sum('fgm'))['fgm__sum'] / games.aggregate(Sum('fga'))['fga__sum'],
-        avg_fga=games.aggregate(Avg('fga'))['fga__avg'],
-        avg_ft_pct=games.aggregate(Sum('ftm'))['ftm__sum'] / games.aggregate(Sum('fta'))['fta__sum'],
-        avg_fta=games.aggregate(Avg('fta'))['fta__avg'],
-        avg_tov=games.aggregate(Avg('tov'))['tov__avg'],
-
-        std_pts=games.aggregate(StdDev('pts'))['pts__stddev'],
-        std_fg3m=games.aggregate(StdDev('fg3m'))['fg3m__stddev'],
-        std_reb=games.aggregate(StdDev('reb'))['reb__stddev'],
-        std_ast=games.aggregate(StdDev('ast'))['ast__stddev'],
-        std_stl=games.aggregate(StdDev('stl'))['stl__stddev'],
-        std_blk=games.aggregate(StdDev('blk'))['blk__stddev'],
-        std_fga=games.aggregate(StdDev('fga'))['fga__stddev'],
-        std_fta=games.aggregate(StdDev('fta'))['fta__stddev'],
-        std_tov=games.aggregate(StdDev('tov'))['tov__stddev'],
-    ).save()
-
-
 def handle_projection_values(season_year: str):
-    try:
-        league_avg = LeagueAverage9Cat.objects.get(season_year=season_year)
-    except LeagueAverage9Cat.DoesNotExist:
-        league_avg = LeagueAverage9Cat.objects.get(season_year='2023-24')
-
+    league_avg = {}
     projections_df = pd.DataFrame.from_records(
         FantasyProjection.objects.filter(season_year=season_year).values()
     )
@@ -345,7 +312,7 @@ def handle_projection_values(season_year: str):
     projection_val_objs = [
         ProjectionValue(
             season_year=row['season_year'],
-            player_id=RawPlayer.objects.get(person_id=row['player_id_id']),
+            player_id=RawPlayer.objects.get(person_id=row['player_id']),
             pts_val=row['pts_val'],
             fg3m_val=row['fg3m_val'],
             reb_val=row['reb_val'],

@@ -36,7 +36,7 @@
         {% for projection in page_obj %}
         <tr>
             <th> {{ projection.season_year}}</th>
-            <th> {{ projection.player_id.player_first_name }} {{ projection.player_id.player_last_name }}</th>
+            <th> {{ projection.player_id }}</th>
             <th> {{ projection.min|floatformat:2 }}</th>
             <th> {{ projection.pts|floatformat:2 }}</th>
             <th> {{ projection.fg3m|floatformat:2 }}</th>

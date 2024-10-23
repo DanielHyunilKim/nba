@@ -1,11 +1,9 @@
 from games.api_services import download_game_logs, download_players
-from games.db_services import handle_game_logs, handle_players, handle_fantasy_projections, handle_league_avg_9_cat, handle_projection_values, handle_fantasy_players, handle_season_averages
+from games.db_services import handle_game_logs, handle_players, handle_fantasy_projections, handle_projection_values
 from games.projection_services import simple_regression
 from celery import shared_task
 from games.models import RawGameLog
 from tqdm import tqdm
-import multiprocessing as mp
-
 
 
 from logging import getLogger
@@ -14,7 +12,7 @@ log = getLogger(__name__)
 
 
 @shared_task()
-def populate_raw_players_task(season="2023-24", historical=1):
+def populate_raw_players_task(season="2024-25", historical=1):
     players = download_players(season, historical)
     handle_players(players)
 
@@ -37,22 +35,5 @@ def populate_fantasy_projection_task(season="2024-25"):
 
 
 @shared_task()
-def populate_league_avgs_task(season="2023-24"):
-    handle_league_avg_9_cat(season)
-
-
-@shared_task()
 def populate_projection_value(season="2023-24"):
     handle_projection_values(season)
-
-
-@shared_task()
-def populate_season_averages(season="2023-24"):
-    player_ids = RawGameLog.objects.filter(season_year=season).values_list('player_id', flat=True).distinct()
-    handle_season_averages(player_ids, season)
-
-
-@shared_task()
-def populate_fantasy_players(season="2023-24"):
-    player_ids = RawGameLog.objects.filter(season_year=season).values_list('player_id', flat=True).distinct()
-    handle_fantasy_players(season)

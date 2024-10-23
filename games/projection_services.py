@@ -1,5 +1,4 @@
-from games.fantasy_services import get_9_cat
-from games.models import RawGameLog, FantasyProjection, LeagueAverage9Cat, ProjectionValue
+from games.models import RawGameLog
 import numpy as np
 from sklearn.svm import SVR
 from sklearn import preprocessing

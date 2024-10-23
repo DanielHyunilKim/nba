@@ -5,7 +5,7 @@ from logging import getLogger
 log = getLogger(__name__)
 
 
-def download_game_logs(season="2023-24", date_from=None, date_to=None):
+def download_game_logs(season="2024-25", date_from=None, date_to=None):
     try:
         url = "https://stats.nba.com/stats/playergamelogs"
         headers = {
@@ -60,7 +60,7 @@ def download_game_logs(season="2023-24", date_from=None, date_to=None):
         log.error(f"Oops: Something Else {e}")
 
 
-def download_players(season="2023-24", historical=1):
+def download_players(season="2024-25", historical=1):
     try:
         url = "https://stats.nba.com/stats/playerindex"
         headers = {
@@ -97,3 +97,25 @@ def download_players(season="2023-24", historical=1):
 
     except requests.exceptions.RequestException as e:
         log.error(f"OOps: Something Else {e}")
+
+
+def download_schedule(season="2024-25"):
+    try:
+        url = "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2_1.json"
+        schedule = requests.get(url=url)
+        return schedule.json()
+
+    except requests.exceptions.HTTPError as e:
+        log.error(f"Http Error: {e}")
+
+    except requests.exceptions.ConnectionError as e:
+        log.error(f"Error Connecting: {e}")
+
+    except requests.exceptions.Timeout as e:
+        log.error(f"Timeout Error: {e}")
+
+    except requests.exceptions.JSONDecodeError as e:
+        log.error(f"JSON Error: {e}")
+
+    except requests.exceptions.RequestException as e:
+        log.error(f"Oops: Something Else {e}")

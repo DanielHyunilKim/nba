@@ -32,7 +32,7 @@ class RawPlayer(TimeStampedModel):
 class RawGameLog(TimeStampedModel):
     # shared
     season_year = models.CharField(max_length=10)  # "2023-24"
-    player_id = models.ForeignKey(RawPlayer, on_delete=models.CASCADE)  # 201144
+    player_id = models.IntegerField()  # 201144
     player_name = models.CharField(max_length=50)  # "Mike Conley"
     nickname = models.CharField(max_length=50)  # "Mike"
     team_id = models.IntegerField()  # 1610612750
@@ -96,6 +96,11 @@ class RawGameLog(TimeStampedModel):
     pie = models.FloatField()  # 0.175
     poss = models.FloatField()  # 52
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['season_year', 'player_id', 'player_name']),
+        ]
+
 
 class FantasyProjection(TimeStampedModel):
     season_year = models.CharField(max_length=10)
@@ -123,31 +128,6 @@ class FantasyProjection(TimeStampedModel):
         return float(self.ftm)/float(self.fta) * 100
 
 
-class LeagueAverage9Cat(TimeStampedModel):
-    season_year = models.CharField(max_length=10)
-    avg_pts = models.FloatField()
-    avg_fg3m = models.FloatField()
-    avg_reb = models.FloatField()
-    avg_ast = models.FloatField()
-    avg_stl = models.FloatField()
-    avg_blk = models.FloatField()
-    avg_fg_pct = models.FloatField()
-    avg_fga = models.FloatField()
-    avg_ft_pct = models.FloatField()
-    avg_fta = models.FloatField()
-    avg_tov = models.FloatField()
-
-    std_pts = models.FloatField()
-    std_fg3m = models.FloatField()
-    std_reb = models.FloatField()
-    std_ast = models.FloatField()
-    std_stl = models.FloatField()
-    std_blk = models.FloatField()
-    std_fga = models.FloatField()
-    std_fta = models.FloatField()
-    std_tov = models.FloatField()
-
-
 class ProjectionValue(TimeStampedModel):
     season_year = models.CharField(max_length=10)
     player_id = models.ForeignKey(RawPlayer, on_delete=models.CASCADE)
@@ -162,15 +142,3 @@ class ProjectionValue(TimeStampedModel):
     tov_val = models.FloatField()
     total_val = models.FloatField()
     projection_accuracy = models.FloatField()
-
-
-class FantasyTeam(models.Model):
-    team_name = models.CharField(max_length=50)
-    season_year = models.CharField(max_length=10)
-
-
-class FantasyPlayer(models.Model):
-    player_id = models.ForeignKey(RawPlayer, on_delete=models.CASCADE)
-    player_name = models.CharField(max_length=50)
-    season_year = models.CharField(max_length=10)
-    fantasy_team = models.ForeignKey(FantasyTeam, on_delete=models.SET_NULL, null=True)

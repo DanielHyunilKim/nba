@@ -21,4 +21,5 @@ from games import views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("fantasy/", views.fantasy, name="fantasy"),
+    path("fantasy/matchup", views.fantasy_matchup, name="fantasy_matchup")
 ]

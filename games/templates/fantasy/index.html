@@ -1,16 +1,18 @@
-{% load static %}
 <html>
 <head>
     <title>NBA Fantasy 2024-25</title>
-    <link rel="stylesheet" type="text/css" href="{% static "games/css/style.css" %}" />
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
 </head>
-<table>
-    <thead>
+<div class="table-responsive">
+<table class="table table-bordere table-striped table-hover">
+    <thead class="table-light">
         <tr>
             {% if page_obj %}
                 {% for key, value in page_obj.object_list.0.items %}
                     <th>
-                        <a href="?sort={{ key }}&direction={% if sort_by == key and direction == 'asc' %}desc{% else %}asc{% endif %}">
+                        <a href="?sort={{ key }}&direction={% if sort_by == key and direction == 'desc' %}asc{% else %}desc{% endif %}">
                             {{ key }}
                             {% if sort_by == key %}
                                 {% if direction == 'asc' %}
@@ -37,6 +39,7 @@
         {% endfor %}
     </tbody>
 </table>
+</div>
 
 <!-- Pagination controls -->
 <div class="pagination">
