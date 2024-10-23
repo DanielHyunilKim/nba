@@ -9,6 +9,8 @@ class BaseAdmin(admin.ModelAdmin):
 
 
 class FantasyPlayerAdmin(admin.ModelAdmin):
+    ordering = ('player',)
+
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == "player":
             kwargs["queryset"] = RawPlayer.objects.filter(roster_status=1).order_by(

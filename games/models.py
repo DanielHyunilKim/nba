@@ -28,6 +28,9 @@ class RawPlayer(TimeStampedModel):
     def __str__(self):
         return f"{self.player_first_name} {self.player_last_name}"
 
+    class Meta:
+        ordering = ['player_first_name', 'player_last_name']
+
 
 # Single game log for each player
 class RawGameLog(TimeStampedModel):
@@ -163,8 +166,9 @@ class FantasyTeam(TimeStampedModel):
 
 
 class FantasyPlayer(TimeStampedModel):
-    fantasy_team = models.ForeignKey(FantasyTeam, null=True, on_delete=models.CASCADE)
+    fantasy_team = models.ForeignKey(FantasyTeam, related_name="related_players", null=True, on_delete=models.CASCADE)
     player = models.ForeignKey(RawPlayer, on_delete=models.CASCADE)
+    injured = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.player.player_first_name} {self.player.player_last_name}"

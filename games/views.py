@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from games.models import FantasyProjection, ProjectionValue, RawGameLog, FantasyTeam
 from django.core.paginator import Paginator
+from games.utils import get_game_counts
 import pandas as pd
 
 
@@ -173,41 +174,12 @@ def fantasy(request):
 
 def fantasy_matchup(request):
     season_year = "2023-24"
-    week = 1
-    team_1 = FantasyTeam.get(team_name="Slam Dunkin")
-    team_2 = FantasyTeam.get(team_name="Kawhi Baby")
+    week = 2
+    team_1_obj = FantasyTeam.objects.get(team_name="Slam Dunkin")
+    team_2_obj = FantasyTeam.objects.get(team_name="Jeongja Glizzy Gladiators")
 
-    team_1 = {
-        "Donovan Mitchell": 3,
-        "Scottie Barnes": 3,
-        "Kyrie Irving": 2,
-        "Jalen Williams": 3,
-        "Fred VanVleet": 3,
-        "Franz Wagner": 3,
-        "Isaiah Hartenstein": 0,
-        "Tobias Harris": 3,
-        "Ivica Zubac": 3,
-        "Zach Edey": 3,
-        "Trey Murphy III": 0,
-        "Tyus Jones": 3,
-        "Gary Trent Jr.": 3,
-        "Dalton Knecht": 2,
-    }
-    team_2 = {
-        "Dejounte Murray": 3,
-        "Anthony Edwards": 3,
-        "Michael Porter Jr.": 2,
-        "Keegan Murray": 2,
-        "Domantas Sabonis": 2,
-        "Immanuel Quickley": 3,
-        "Jerami Grant": 3,
-        "Bam Adebayo": 2,
-        "Tyler Herro": 2,
-        "Josh Hart": 2,
-        "Brandin Podziemski": 3,
-        "Malik Monk": 2,
-        "Jordan Clarkson": 2,
-    }
+    team_1 = get_game_counts(team_1_obj, week)
+    team_2 = get_game_counts(team_2_obj, week)
 
     rostered_players = list(team_1.keys()) + list(team_2.keys())
 
@@ -297,31 +269,8 @@ def fantasy_matchup(request):
         ]
     )
 
-    knecht_df = pd.DataFrame(
-        [
-            {
-                "player_id": 1642261,
-                "player_name": "Dalton Knecht",
-                "season_year": "2024-25",
-                "min": 20,
-                "pts": 10,
-                "fg3m": 2,
-                "reb": 3,
-                "ast": 1.5,
-                "stl": 0.4,
-                "blk": 0.4,
-                "fgm": 3,
-                "fga": 7,
-                "ftm": 1.6,
-                "fta": 2.1,
-                "tov": 1.5,
-                "usg_pct": 0.18,
-            }
-        ]
-    )
-
     team_1_df = averages_df[averages_df["player_name"].isin(team_1.keys())]
-    team_1_df = pd.concat([team_1_df, edey_df, knecht_df])
+    team_1_df = pd.concat([team_1_df, edey_df])
     team_2_df = averages_df[averages_df["player_name"].isin(team_2.keys())]
 
     team_1_df["games_played"] = team_1_df["player_name"].map(team_1)
