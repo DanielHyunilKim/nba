@@ -99,7 +99,7 @@ class RawGameLog(TimeStampedModel):
 
     class Meta:
         indexes = [
-            models.Index(fields=['season_year', 'player_id', 'player_name']),
+            models.Index(fields=["season_year", "player_id", "player_name"]),
         ]
 
 
@@ -122,11 +122,11 @@ class FantasyProjection(TimeStampedModel):
 
     @property
     def fg_pct(self):
-        return float(self.fgm)/float(self.fga) * 100
+        return float(self.fgm) / float(self.fga) * 100
 
     @property
     def ft_pct(self):
-        return float(self.ftm)/float(self.fta) * 100
+        return float(self.ftm) / float(self.fta) * 100
 
 
 class ProjectionValue(TimeStampedModel):

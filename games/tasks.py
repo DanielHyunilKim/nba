@@ -40,9 +40,15 @@ def populate_fantasy_projection_task(season="2024-25"):
     # get players who played _previous_ season (assume season is past 2010)
     first = int(season[:4]) - 1
     second = int(season[-2:]) - 1
-    prev_season = str(first) + '-' + str(second)
-    player_ids = RawGameLog.objects.filter(season_year=prev_season).values_list('player_id', flat=True).distinct()
-    nine_cat_list = [simple_regression(player_id, season) for player_id in tqdm(player_ids)]
+    prev_season = str(first) + "-" + str(second)
+    player_ids = (
+        RawGameLog.objects.filter(season_year=prev_season)
+        .values_list("player_id", flat=True)
+        .distinct()
+    )
+    nine_cat_list = [
+        simple_regression(player_id, season) for player_id in tqdm(player_ids)
+    ]
     handle_fantasy_projections(nine_cat_list)
 
 

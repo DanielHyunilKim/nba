@@ -40,7 +40,9 @@ def download_game_logs(season="2024-25", date_from=None, date_to=None):
         traditional_data = requests.get(
             url=url, params=traditional_params, headers=headers, timeout=None
         )
-        advanced_data = requests.get(url=url, params=advanced_params, headers=headers, timeout=None)
+        advanced_data = requests.get(
+            url=url, params=advanced_params, headers=headers, timeout=None
+        )
 
         return traditional_data.json(), advanced_data.json()
 

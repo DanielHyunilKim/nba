@@ -10,26 +10,26 @@ from logging import getLogger
 log = getLogger(__name__)
 
 PLAYER_FIELDS = [
-    'PERSON_ID',
-    'PLAYER_LAST_NAME',
-    'PLAYER_FIRST_NAME',
-    'PLAYER_SLUG',
-    'TEAM_ID',
-    'TEAM_SLUG',
-    'IS_DEFUNCT',
-    'TEAM_CITY',
-    'TEAM_NAME',
-    'TEAM_ABBREVIATION',
-    'JERSEY_NUMBER',
-    'POSITION',
-    'HEIGHT',
-    'WEIGHT',
-    'COLLEGE',
-    'COUNTRY',
-    'DRAFT_YEAR',
-    'DRAFT_ROUND',
-    'DRAFT_NUMBER',
-    'ROSTER_STATUS'
+    "PERSON_ID",
+    "PLAYER_LAST_NAME",
+    "PLAYER_FIRST_NAME",
+    "PLAYER_SLUG",
+    "TEAM_ID",
+    "TEAM_SLUG",
+    "IS_DEFUNCT",
+    "TEAM_CITY",
+    "TEAM_NAME",
+    "TEAM_ABBREVIATION",
+    "JERSEY_NUMBER",
+    "POSITION",
+    "HEIGHT",
+    "WEIGHT",
+    "COLLEGE",
+    "COUNTRY",
+    "DRAFT_YEAR",
+    "DRAFT_ROUND",
+    "DRAFT_NUMBER",
+    "ROSTER_STATUS",
 ]
 
 TRAD_FIELDS = [
@@ -111,26 +111,26 @@ def handle_players(players):
 
     player_objs = [
         RawPlayer(
-            person_id=row['PERSON_ID'],
-            player_last_name=row['PLAYER_LAST_NAME'],
-            player_first_name=row['PLAYER_FIRST_NAME'],
-            player_slug=row['PLAYER_SLUG'],
-            team_id=row['TEAM_ID'],
-            team_slug=row['TEAM_SLUG'],
-            is_defunct=row['IS_DEFUNCT'],
-            team_city=row['TEAM_CITY'],
-            team_name=row['TEAM_NAME'],
-            team_abbreviation=row['TEAM_ABBREVIATION'],
-            jersey_number=row['JERSEY_NUMBER'],
-            position=row['POSITION'],
-            height=row['HEIGHT'],
-            weight=row['WEIGHT'],
-            college=row['COLLEGE'],
-            country=row['COUNTRY'],
-            draft_year=row['DRAFT_YEAR'],
-            draft_round=row['DRAFT_ROUND'],
-            draft_number=row['DRAFT_NUMBER'],
-            roster_status=row['ROSTER_STATUS'],
+            person_id=row["PERSON_ID"],
+            player_last_name=row["PLAYER_LAST_NAME"],
+            player_first_name=row["PLAYER_FIRST_NAME"],
+            player_slug=row["PLAYER_SLUG"],
+            team_id=row["TEAM_ID"],
+            team_slug=row["TEAM_SLUG"],
+            is_defunct=row["IS_DEFUNCT"],
+            team_city=row["TEAM_CITY"],
+            team_name=row["TEAM_NAME"],
+            team_abbreviation=row["TEAM_ABBREVIATION"],
+            jersey_number=row["JERSEY_NUMBER"],
+            position=row["POSITION"],
+            height=row["HEIGHT"],
+            weight=row["WEIGHT"],
+            college=row["COLLEGE"],
+            country=row["COUNTRY"],
+            draft_year=row["DRAFT_YEAR"],
+            draft_round=row["DRAFT_ROUND"],
+            draft_number=row["DRAFT_NUMBER"],
+            roster_status=row["ROSTER_STATUS"],
         )
         for _, row in tqdm(df_pruned.iterrows())
     ]
@@ -256,23 +256,23 @@ def validate_gamelog_json(traditional, advanced) -> bool:
 
 
 def handle_schedule(schedule_json):
-    season_year = schedule_json['leagueSchedule']['seasonYear']
-    game_dates = schedule_json['leagueSchedule']['gameDates']
+    season_year = schedule_json["leagueSchedule"]["seasonYear"]
+    game_dates = schedule_json["leagueSchedule"]["gameDates"]
 
     games = []
     for game_date in game_dates:
-        for game in game_date['games']:
+        for game in game_date["games"]:
             games.append(game)
 
     schedule_objs = [
         Game(
             season_year=season_year,
-            week_number=game['weekNumber'],
-            game_date=game['gameDateEst'],
-            home_team=game['homeTeam']['teamTricode'],
-            home_team_id=game['homeTeam']['teamId'],
-            away_team=game['awayTeam']['teamTricode'],
-            away_team_id=game['awayTeam']['teamId'],
+            week_number=game["weekNumber"],
+            game_date=game["gameDateEst"],
+            home_team=game["homeTeam"]["teamTricode"],
+            home_team_id=game["homeTeam"]["teamId"],
+            away_team=game["awayTeam"]["teamTricode"],
+            away_team_id=game["awayTeam"]["teamId"],
         )
         for game in tqdm(games)
     ]
@@ -280,27 +280,29 @@ def handle_schedule(schedule_json):
     with transaction.atomic():
         Game.objects.bulk_create(schedule_objs, batch_size=1000)
 
+
 def handle_fantasy_projections(nine_cat_list):
 
     fantasy_projection_objs = [
         FantasyProjection(
-            season_year=row['season_year'],
-            player_id=row['player_id'],
-            min=row['min'],
-            pts=row['pts'],
-            fg3m=row['fg3m'],
-            reb=row['reb'],
-            ast=row['ast'],
-            stl=row['stl'],
-            blk=row['blk'],
-            fgm=row['fgm'],
-            fga=row['fga'],
-            ftm=row['ftm'],
-            fta=row['fta'],
-            tov=row['tov'],
-            usg_pct=row['usg_pct'],
+            season_year=row["season_year"],
+            player_id=row["player_id"],
+            min=row["min"],
+            pts=row["pts"],
+            fg3m=row["fg3m"],
+            reb=row["reb"],
+            ast=row["ast"],
+            stl=row["stl"],
+            blk=row["blk"],
+            fgm=row["fgm"],
+            fga=row["fga"],
+            ftm=row["ftm"],
+            fta=row["fta"],
+            tov=row["tov"],
+            usg_pct=row["usg_pct"],
         )
-        for row in tqdm(nine_cat_list) if row is not None
+        for row in tqdm(nine_cat_list)
+        if row is not None
     ]
 
     with transaction.atomic():
@@ -313,42 +315,60 @@ def handle_projection_values(season_year: str):
         FantasyProjection.objects.filter(season_year=season_year).values()
     )
 
-    projections_df['pts_val'] = (projections_df['pts'] - league_avg.avg_pts) / league_avg.std_pts
-    projections_df['fg3m_val'] = (projections_df['fg3m'] - league_avg.avg_fg3m) / league_avg.std_fg3m
-    projections_df['reb_val'] = (projections_df['reb'] - league_avg.avg_reb) / league_avg.std_reb
-    projections_df['ast_val'] = (projections_df['ast'] - league_avg.avg_ast) / league_avg.std_ast
-    projections_df['stl_val'] = (projections_df['stl'] - league_avg.avg_stl) / league_avg.std_stl
-    projections_df['blk_val'] = (projections_df['blk'] - league_avg.avg_blk) / league_avg.std_blk
-    projections_df['fg_pct_val'] = projections_df.apply(fg_val_func, league_avg=league_avg, axis=1)
-    projections_df['ft_pct_val'] = projections_df.apply(ft_val_func, league_avg=league_avg, axis=1)
-    projections_df['tov_val'] = 0 - (projections_df['tov'] - league_avg.avg_tov) / league_avg.std_tov
-    projections_df['total_val'] = (
-            projections_df['pts_val']
-            + projections_df['fg3m_val']
-            + projections_df['reb_val']
-            + projections_df['ast_val']
-            + projections_df['stl_val']
-            + projections_df['blk_val']
-            + projections_df['fg_pct_val']
-            + projections_df['ft_pct_val']
-            + projections_df['tov_val']
+    projections_df["pts_val"] = (
+        projections_df["pts"] - league_avg.avg_pts
+    ) / league_avg.std_pts
+    projections_df["fg3m_val"] = (
+        projections_df["fg3m"] - league_avg.avg_fg3m
+    ) / league_avg.std_fg3m
+    projections_df["reb_val"] = (
+        projections_df["reb"] - league_avg.avg_reb
+    ) / league_avg.std_reb
+    projections_df["ast_val"] = (
+        projections_df["ast"] - league_avg.avg_ast
+    ) / league_avg.std_ast
+    projections_df["stl_val"] = (
+        projections_df["stl"] - league_avg.avg_stl
+    ) / league_avg.std_stl
+    projections_df["blk_val"] = (
+        projections_df["blk"] - league_avg.avg_blk
+    ) / league_avg.std_blk
+    projections_df["fg_pct_val"] = projections_df.apply(
+        fg_val_func, league_avg=league_avg, axis=1
+    )
+    projections_df["ft_pct_val"] = projections_df.apply(
+        ft_val_func, league_avg=league_avg, axis=1
+    )
+    projections_df["tov_val"] = (
+        0 - (projections_df["tov"] - league_avg.avg_tov) / league_avg.std_tov
+    )
+    projections_df["total_val"] = (
+        projections_df["pts_val"]
+        + projections_df["fg3m_val"]
+        + projections_df["reb_val"]
+        + projections_df["ast_val"]
+        + projections_df["stl_val"]
+        + projections_df["blk_val"]
+        + projections_df["fg_pct_val"]
+        + projections_df["ft_pct_val"]
+        + projections_df["tov_val"]
     )
 
     projection_val_objs = [
         ProjectionValue(
-            season_year=row['season_year'],
-            player_id=RawPlayer.objects.get(person_id=row['player_id']),
-            pts_val=row['pts_val'],
-            fg3m_val=row['fg3m_val'],
-            reb_val=row['reb_val'],
-            ast_val=row['ast_val'],
-            stl_val=row['stl_val'],
-            blk_val=row['blk_val'],
-            fg_pct_val=row['fg_pct_val'],
-            ft_pct_val=row['ft_pct_val'],
-            tov_val=row['tov_val'],
-            total_val=row['total_val'],
-            projection_accuracy=0
+            season_year=row["season_year"],
+            player_id=RawPlayer.objects.get(person_id=row["player_id"]),
+            pts_val=row["pts_val"],
+            fg3m_val=row["fg3m_val"],
+            reb_val=row["reb_val"],
+            ast_val=row["ast_val"],
+            stl_val=row["stl_val"],
+            blk_val=row["blk_val"],
+            fg_pct_val=row["fg_pct_val"],
+            ft_pct_val=row["ft_pct_val"],
+            tov_val=row["tov_val"],
+            total_val=row["total_val"],
+            projection_accuracy=0,
         )
         for _, row in tqdm(projections_df.iterrows())
     ]
@@ -358,8 +378,8 @@ def handle_projection_values(season_year: str):
 
 
 def fg_val_func(row, league_avg):
-    raw_val = (max(0, row['fgm']) / row['fga'] - league_avg.avg_fg_pct)
-    multiplier = (row['fga'] - league_avg.avg_fga) / league_avg.std_fga * 7
+    raw_val = max(0, row["fgm"]) / row["fga"] - league_avg.avg_fg_pct
+    multiplier = (row["fga"] - league_avg.avg_fga) / league_avg.std_fga * 7
     if multiplier > 0:
         return raw_val * (1 + multiplier)
     else:
@@ -367,10 +387,10 @@ def fg_val_func(row, league_avg):
 
 
 def ft_val_func(row, league_avg):
-    ft_pct = row['ftm'] / row['fta']
+    ft_pct = row["ftm"] / row["fta"]
     ft_pct = min(max(0, ft_pct), 1)
     raw_val = ft_pct - league_avg.avg_ft_pct
-    multiplier = (row['fta'] - league_avg.avg_fta) / league_avg.std_fta * 7
+    multiplier = (row["fta"] - league_avg.avg_fta) / league_avg.std_fta * 7
     if multiplier > 0:
         return raw_val * (1 + multiplier)
     else:
