@@ -5,50 +5,87 @@
     {% bootstrap_css %}
     {% bootstrap_javascript %}
 </head>
-<div class="table-responsive">
-    <table class="table table-bordere table-striped table-hover">
-        <thead class="table-light">
-            <tr>
-                {% for key, value in team_1.0.items %}
-                <th>
-                    {{ key }}
-                </th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for player in team_1 %}
+<body class="container-fluid">
+    <h3 class="d-flex justify-content-around pt-3">2024-25 NBA Matchup Week {{ week }}</h3>
+    <form class="container-sm" method="GET" action="">
+        <select class="form-select" id="week-select" name="week" onchange="this.form.submit()">
+            {% for week_num in weeks %}
+                <option value="{{ week_num }}" {% if week_num|stringformat:"s" == week|stringformat:"s" %}selected{% endif %}>
+                    Week {{ week_num }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <div class="row">
+            <div class="col">
+                <label for="team-1-select">Select Team 1</label>
+                <select class="form-select" id="team-1-select" name="team_1" onchange="this.form.submit()">
+                    {% for team in teams %}
+                        <option value="{{ team.id }}" {% if team.id|stringformat:"s" == selected_team_1|stringformat:"s" %}selected{% endif %}>
+                            {{ team.team_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col">
+                <label for="team-2-select">Select Team 2</label>
+                <select class="form-select" id="team-2-select" name="team_2" onchange="this.form.submit()">
+                    {% for team in teams %}
+                        <option value="{{ team.id }}" {% if team.id|stringformat:"s" == selected_team_2|stringformat:"s" %}selected{% endif %}>
+                            {{ team.team_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </form>
+    <div class="table-responsive container">
+        <h5>{{ team_1_name }}</h5>
+        <table class="table table-bordered table-striped table-hover">
+            <thead class="table-light">
                 <tr>
-                   {% for key, value in player.items %}
-                        <td>
-                            {{ value }}
-                        </td>
+                    {% for key, value in team_1.0.items %}
+                    <th>
+                        {{ key }}
+                    </th>
                     {% endfor %}
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <table class="table table-bordere table-striped table-hover">
-        <thead class="table-light">
-            <tr>
-                {% for key, value in team_2.0.items %}
-                <th>
-                    {{ key }}
-                </th>
+            </thead>
+            <tbody>
+                {% for player in team_1 %}
+                    <tr>
+                       {% for key, value in player.items %}
+                            <td>
+                                {{ value }}
+                            </td>
+                        {% endfor %}
+                    </tr>
                 {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for player in team_2 %}
+            </tbody>
+        </table>
+        <h5>{{ team_2_name }}</h5>
+        <table class="table table-bordered table-striped table-hover">
+            <thead class="table-light">
                 <tr>
-                   {% for key, value in player.items %}
-                        <td>
-                            {{ value }}
-                        </td>
+                    {% for key, value in team_2.0.items %}
+                    <th>
+                        {{ key }}
+                    </th>
                     {% endfor %}
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+            </thead>
+            <tbody>
+                {% for player in team_2 %}
+                    <tr>
+                       {% for key, value in player.items %}
+                            <td>
+                                {{ value }}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
 </html>

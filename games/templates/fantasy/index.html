@@ -5,14 +5,16 @@
     {% bootstrap_css %}
     {% bootstrap_javascript %}
 </head>
+<body class="container-fluid">
+<h5>2024-25 Fantasy Values</h5>
 <div class="table-responsive">
-<table class="table table-bordere table-striped table-hover">
+<table class="table table-bordered table-striped table-hover table-sm">
     <thead class="table-light">
         <tr>
             {% if page_obj %}
                 {% for key, value in page_obj.object_list.0.items %}
                     <th>
-                        <a href="?sort={{ key }}&direction={% if sort_by == key and direction == 'desc' %}asc{% else %}desc{% endif %}">
+                        <a href="?sort={{ key }}&direction={% if sort_by == key and direction == 'desc' %}asc{% else %}desc{% endif %}" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover" >
                             {{ key }}
                             {% if sort_by == key %}
                                 {% if direction == 'asc' %}
@@ -59,4 +61,5 @@
         {% endif %}
     </span>
 </div>
+</body>
 </html>

@@ -26,7 +26,7 @@ def projections(request):
 
 
 def fantasy(request):
-    season_year = "2023-24"
+    season_year = "2024-25"
 
     game_logs_qs = RawGameLog.objects.filter(season_year=season_year).values_list(
         "player_id",
@@ -46,8 +46,8 @@ def fantasy(request):
         "tov",
         "usg_pct",
     )
-    game_logs_df = pd.DataFrame(
-        list(game_logs_qs),
+    game_logs_df = pd.DataFrame.from_records(
+        game_logs_qs,
         columns=[
             "player_id",
             "player_name",
@@ -174,9 +174,23 @@ def fantasy(request):
 
 def fantasy_matchup(request):
     season_year = "2023-24"
-    week = 2
-    team_1_obj = FantasyTeam.objects.get(team_name="Slam Dunkin")
-    team_2_obj = FantasyTeam.objects.get(team_name="Jeongja Glizzy Gladiators")
+    week = request.GET.get("week") or request.POST.get("week")
+
+    if not week:
+        week = 1
+
+    teams = FantasyTeam.objects.all()
+    team_1_id = request.GET.get("team_1") or request.POST.get("team_1")
+    team_2_id = request.GET.get("team_2") or request.POST.get("team_2")
+
+    if not team_1_id or not team_2_id:
+        # Default to the first two teams if not selected
+        team_1_obj = teams.first()
+        team_2_obj = teams.last() if len(teams) > 1 else teams.first()
+    else:
+        # Query the selected teams from the database
+        team_1_obj = FantasyTeam.objects.get(id=team_1_id)
+        team_2_obj = FantasyTeam.objects.get(id=team_2_id)
 
     team_1 = get_game_counts(team_1_obj, week)
     team_2 = get_game_counts(team_2_obj, week)
@@ -355,7 +369,14 @@ def fantasy_matchup(request):
         request,
         "fantasy/matchup.html",
         {
+            "week": week,
+            "team_1_name": team_1_obj.team_name,
+            "team_2_name": team_2_obj.team_name,
             "team_1": team_1,
             "team_2": team_2,
+            "weeks": list(range(1, 22)),
+            "teams": teams,
+            "selected_team_1": team_1_id,
+            "selected_team_2": team_2_id,
         },
     )

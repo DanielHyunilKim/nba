@@ -9,7 +9,8 @@ class BaseAdmin(admin.ModelAdmin):
 
 
 class FantasyPlayerAdmin(admin.ModelAdmin):
-    ordering = ('player',)
+    list_select_related = True
+    ordering = ("player",)
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == "player":

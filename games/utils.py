@@ -1,20 +1,17 @@
-from games.models import FantasyTeam, FantasyPlayer, Game
-from django.db.models import Q
+from games.models import FantasyTeam, WeeklyTeamGameCount
 
 
 def get_game_counts(fantasy_team: FantasyTeam, week_number):
-    fantasy_players = fantasy_team.related_players
+    fantasy_players = fantasy_team.related_players.select_related("player")
 
-    game_counts = {}
+    team_game_counts = WeeklyTeamGameCount.objects.filter(week_number=week_number)
+    team_game_counts_dict = {team.team_id: team.game_count for team in team_game_counts}
+
+    player_game_counts = {}
     for player in fantasy_players.all():
-        player_name = player.__str__()
         player_team_id = player.player.team_id
-        if player.injured:
-            game_counts[player_name] = 0
-        else:
-            player_games = (Game.objects.filter(week_number=week_number)
-                            .filter(Q(home_team_id=player_team_id) | Q(away_team_id=player_team_id)))
-            game_counts[player_name] = len(player_games)
+        player_game_counts[str(player)] = (
+            0 if player.injured else team_game_counts_dict[player_team_id]
+        )
 
-
-    return game_counts
+    return player_game_counts

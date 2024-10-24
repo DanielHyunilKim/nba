@@ -1,8 +1,17 @@
 from django.db import transaction
-from games.models import RawPlayer, RawGameLog, FantasyProjection, ProjectionValue, Game
+from games.models import (
+    RawPlayer,
+    RawGameLog,
+    FantasyProjection,
+    ProjectionValue,
+    Game,
+    WeeklyTeamGameCount,
+)
 import pandas as pd
 from tqdm import tqdm
 import numpy as np
+from django.db.models import Count
+from collections import defaultdict
 
 
 from logging import getLogger
@@ -279,6 +288,36 @@ def handle_schedule(schedule_json):
 
     with transaction.atomic():
         Game.objects.bulk_create(schedule_objs, batch_size=1000)
+
+
+def update_team_game_counts(season_year, week_number):
+    team_game_counts = defaultdict(int)
+
+    home_games = (
+        Game.objects.filter(week_number=week_number)
+        .values("home_team_id")
+        .annotate(game_count=Count("id"))
+    )
+    away_games = (
+        Game.objects.filter(week_number=week_number)
+        .values("away_team_id")
+        .annotate(game_count=Count("id"))
+    )
+
+    for game in home_games:
+        team_game_counts[game["home_team_id"]] += game["game_count"]
+
+    for game in away_games:
+        team_game_counts[game["away_team_id"]] += game["game_count"]
+
+    # Loop through each team and save/update the count in the database
+    for team, count in team_game_counts.items():
+        WeeklyTeamGameCount.objects.update_or_create(
+            season_year=season_year,
+            week_number=week_number,
+            team_id=int(team),
+            defaults={"game_count": count},
+        )
 
 
 def handle_fantasy_projections(nine_cat_list):
