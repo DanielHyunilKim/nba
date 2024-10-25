@@ -1,0 +1,93 @@
+<html>
+<head>
+    <title>NBA Fantasy Rankings</title>
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    {% load custom_filters %}
+</head>
+<body class="container-fluid">
+<h5>2024-25 Fantasy Rankings</h5>
+<div class="table-responsive">
+<table class="table table-bordered table-hover table-sm">
+    <thead class="table-light">
+        <tr>
+            {% if page_obj %}
+                <th>Rank</th>
+                {% for key, value in page_obj.object_list.0.items %}
+                    {% if key != 'rank' %}
+                        <th>
+                            <a href="?sort={{ key }}&direction={% if sort_by == key and direction == 'desc' %}asc{% else %}desc{% endif %}" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover" >
+                                {% if 'z' in key and key != 'total_z' %}
+                                    <form class="form-check" method="GET">
+                                      <input class="form-check-input" name="impact_values" type="checkbox" checked="{% if impact_stat in selected_impact_values %}checked{% endif %}" id="defaultCheck1" onchange="this.form.submit()">
+                                      <label class="form-check-label" for="defaultCheck1">
+                                        {{ key }}
+                                      </label>
+                                    </form>
+                                {% else %}
+                                    {{ key }}
+                                {% endif %}
+                                {% if sort_by == key %}
+                                    {% if direction == 'asc' %}
+                                        &uarr;  <!-- Up arrow for ascending -->
+                                    {% else %}
+                                        &darr;  <!-- Down arrow for descending -->
+                                    {% endif %}
+                                {% endif %}
+                            </a>
+                        </th>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for player in page_obj %}
+            <tr {% if forloop.counter|divisibleby:12 %} style="border-bottom: 2px solid gray;" {% endif %}>
+                <td>{{ player.rank }}</td>
+                {% for key, value in player.items %}
+                    {% if key != 'rank' %}
+                        {% if "_z" in key and key != "total_z" %}
+                            <td style="background-color: {{ value|background_color }};" >
+                                {{ value }}
+                            </td>
+                        {% else %}
+                            {% if key == "player_name" or key == "ft_pct"%}
+                            <td style="border-right: 1px solid gray;">
+                                {{ value }}
+                            </td>
+                            {% else %}
+                            <td>
+                                {{ value }}
+                            </td>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<!-- Pagination controls -->
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1&sort={{ sort_by }}&direction={{ direction }}">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}&sort={{ sort_by }}&direction={{ direction }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&sort={{ sort_by }}&direction={{ direction }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}&sort={{ sort_by }}&direction={{ direction }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+</body>
+</html>

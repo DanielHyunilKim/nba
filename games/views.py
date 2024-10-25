@@ -22,11 +22,18 @@ def projections(request):
         "projection_values": projection_values,
         "player_ids": player_ids,
     }
-    return render(request, "games/index.html", context)
+    return render(request, "games/rankings.html", context)
 
 
-def fantasy(request):
+def rankings(request):
     season_year = "2024-25"
+
+    selected_impact_values = request.GET.get("impact_values")
+    all_impact_values = ['pts_z', 'fg3m_z', 'reb_z', 'ast_z', 'stl_z', 'blk_z', 'fg_pct_z', 'ft_pct_z', 'tov_z']
+    if selected_impact_values:
+        impact_values = selected_impact_values
+    else:
+        impact_values = all_impact_values
 
     game_logs_qs = RawGameLog.objects.filter(season_year=season_year).values_list(
         "player_id",
@@ -101,62 +108,38 @@ def fantasy(request):
     league_stddev_fga = league_df["fga"].std()
     league_stddev_fta = league_df["fta"].std()
 
-    averages_df["pts_val"] = (averages_df["pts"] - league_df["pts"].mean()) / league_df[
-        "pts"
-    ].std()
-    averages_df["fg3m_val"] = (
-        averages_df["fg3m"] - league_df["fg3m"].mean()
-    ) / league_df["fg3m"].std()
-    averages_df["reb_val"] = (averages_df["reb"] - league_df["reb"].mean()) / league_df[
-        "reb"
-    ].std()
-    averages_df["ast_val"] = (averages_df["ast"] - league_df["ast"].mean()) / league_df[
-        "ast"
-    ].std()
-    averages_df["stl_val"] = (averages_df["stl"] - league_df["stl"].mean()) / league_df[
-        "stl"
-    ].std()
-    averages_df["blk_val"] = (averages_df["blk"] - league_df["blk"].mean()) / league_df[
-        "blk"
-    ].std()
-    averages_df["fg_pct_val"] = (
+    averages_df["pts_z"] = (averages_df["pts"] - league_df["pts"].mean()) / league_df["pts"].std()
+    averages_df["fg3m_z"] = (averages_df["fg3m"] - league_df["fg3m"].mean()) / league_df["fg3m"].std()
+    averages_df["reb_z"] = (averages_df["reb"] - league_df["reb"].mean()) / league_df["reb"].std()
+    averages_df["ast_z"] = (averages_df["ast"] - league_df["ast"].mean()) / league_df["ast"].std()
+    averages_df["stl_z"] = (averages_df["stl"] - league_df["stl"].mean()) / league_df["stl"].std()
+    averages_df["blk_z"] = (averages_df["blk"] - league_df["blk"].mean()) / league_df["blk"].std()
+    averages_df["fg_pct_z"] = (
         (averages_df["fg_pct"] - league_avg_fg_pct)
         * averages_df["fga"]
         / league_stddev_fga
     ) / league_stddev_fg_pct
-    averages_df["ft_pct_val"] = (
+    averages_df["ft_pct_z"] = (
         (averages_df["ft_pct"] - league_avg_ft_pct)
         * averages_df["fta"]
         / league_stddev_fta
     ) / league_stddev_ft_pct
-    averages_df["tov_val"] = (
-        0 - (averages_df["tov"] - league_df["tov"].mean()) / league_df["tov"].std()
-    )
+    averages_df["tov_z"] = (0 - (averages_df["tov"] - league_df["tov"].mean()) / league_df["tov"].std())
 
-    averages_df["total_impact"] = (
-        averages_df["pts_val"]
-        + averages_df["fg3m_val"]
-        + averages_df["reb_val"]
-        + averages_df["ast_val"]
-        + averages_df["stl_val"]
-        + averages_df["blk_val"]
-        + averages_df["fg_pct_val"]
-        + averages_df["ft_pct_val"]
-        + averages_df["tov_val"]
-    )
+    averages_df["total_z"] = sum([averages_df[x] for x in impact_values])
     averages_df = averages_df.round(decimals=2)
-    averages_df.drop("player_id", axis=1, inplace=True)
-    averages_df.rename(columns={"season_year": "season"}, inplace=True)
-    averages_df["season"] = "2024"
+    averages_df.drop(["player_id", "season_year"], axis=1, inplace=True)
 
     player_impacts = averages_df.to_dict(orient="records")
 
     # Sorting logic for multiple fields
-    sort_by = request.GET.get("sort", "total_impact")  # Default sort by total_impact
+    sort_by = request.GET.get("sort", "total_z")  # Default sort by total_impact
     direction = request.GET.get("direction", "desc")
 
     reverse = True if direction == "desc" else False
     player_impacts = sorted(player_impacts, key=lambda x: x[sort_by], reverse=reverse)
+    for i, player in enumerate(player_impacts, start=1):
+        player['rank'] = i
 
     # Paginate the sorted player impacts (10 per page for example)
     paginator = Paginator(player_impacts, 100)
@@ -167,21 +150,22 @@ def fantasy(request):
         "page_obj": page_obj,
         "sort_by": sort_by,
         "direction": direction,
+        "selected_impact_values": selected_impact_values,
     }
 
-    return render(request, "fantasy/index.html", context)
+    return render(request, "fantasy/rankings.html", context)
 
 
 def fantasy_matchup(request):
-    season_year = "2023-24"
-    week = request.GET.get("week") or request.POST.get("week")
+    season_year = "2024-25"
+    week = request.GET.get("week")
 
     if not week:
         week = 1
 
     teams = FantasyTeam.objects.all()
-    team_1_id = request.GET.get("team_1") or request.POST.get("team_1")
-    team_2_id = request.GET.get("team_2") or request.POST.get("team_2")
+    team_1_id = request.GET.get("team_1")
+    team_2_id = request.GET.get("team_2")
 
     if not team_1_id or not team_2_id:
         # Default to the first two teams if not selected
@@ -260,31 +244,7 @@ def fantasy_matchup(request):
         .reset_index()
     )
 
-    edey_df = pd.DataFrame(
-        [
-            {
-                "player_id": 1641744,
-                "player_name": "Zach Edey",
-                "season_year": "2024-25",
-                "min": 25,
-                "pts": 12,
-                "fg3m": 0,
-                "reb": 9,
-                "ast": 1.5,
-                "stl": 0.2,
-                "blk": 1.5,
-                "fgm": 4.5,
-                "fga": 8,
-                "ftm": 2.1,
-                "fta": 3,
-                "tov": 2,
-                "usg_pct": 0.18,
-            }
-        ]
-    )
-
     team_1_df = averages_df[averages_df["player_name"].isin(team_1.keys())]
-    team_1_df = pd.concat([team_1_df, edey_df])
     team_2_df = averages_df[averages_df["player_name"].isin(team_2.keys())]
 
     team_1_df["games_played"] = team_1_df["player_name"].map(team_1)
@@ -293,6 +253,8 @@ def fantasy_matchup(request):
     team_1_df["ft_pct"] = team_1_df["ftm"] / team_1_df["fta"]
     team_2_df["fg_pct"] = team_2_df["fgm"] / team_2_df["fga"]
     team_2_df["ft_pct"] = team_2_df["ftm"] / team_2_df["fta"]
+    team_1_df.fillna(0, inplace=True)
+    team_2_df.fillna(0, inplace=True)
 
     team_totals = []
 

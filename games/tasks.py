@@ -10,6 +10,8 @@ from games.projection_services import simple_regression
 from celery import shared_task
 from games.models import RawGameLog
 from tqdm import tqdm
+from django.db.models import Max
+import datetime
 
 
 from logging import getLogger
@@ -25,6 +27,16 @@ def populate_raw_players_task(season="2024-25", historical=1):
 
 @shared_task()
 def populate_raw_game_logs_task(season="2024-25", date_from=None, date_to=None):
+    traditional, advanced = download_game_logs(season, date_from, date_to)
+    handle_game_logs(traditional, advanced)
+
+
+@shared_task()
+def populate_recent_game_logs_task(season="2024-25", date_from=None, date_to=None):
+    recent_date = RawGameLog.objects.aggregate(Max('game_date'))['game_date__max']
+    formatted_recent_date = datetime.datetime.strptime(recent_date, '%Y-%m-%dT%H:%M:%S')
+    date_from = (formatted_recent_date + datetime.timedelta(days=1)).strftime('%m/%d/%Y')
+
     traditional, advanced = download_game_logs(season, date_from, date_to)
     handle_game_logs(traditional, advanced)
 
