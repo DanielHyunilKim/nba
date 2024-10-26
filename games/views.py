@@ -152,6 +152,7 @@ def rankings(request):
     )
 
     averages_df["total_z"] = sum([averages_df[x] for x in impact_values])
+    averages_df.rename(columns={"usg_pct": "usg"}, inplace=True)
     averages_df = averages_df.round(decimals=2)
     averages_df.drop(["player_id", "season_year"], axis=1, inplace=True)
 
@@ -205,11 +206,25 @@ def fantasy_matchup(request):
     team_1 = get_game_counts(team_1_obj, week)
     team_2 = get_game_counts(team_2_obj, week)
 
-    rostered_players = list(team_1.keys()) + list(team_2.keys())
+    selected_impact_values = request.GET.getlist("selected_impact_values")
+    all_impact_values = [
+        "pts_z",
+        "fg3m_z",
+        "reb_z",
+        "ast_z",
+        "stl_z",
+        "blk_z",
+        "fg_pct_z",
+        "ft_pct_z",
+        "tov_z",
+    ]
+    if selected_impact_values:
+        impact_values = selected_impact_values
+    else:
+        impact_values = all_impact_values
+        selected_impact_values = all_impact_values
 
-    game_logs_qs = RawGameLog.objects.filter(
-        season_year=season_year, player_name__in=rostered_players
-    ).values_list(
+    game_logs_qs = RawGameLog.objects.filter(season_year=season_year).values_list(
         "player_id",
         "player_name",
         "season_year",
@@ -227,8 +242,8 @@ def fantasy_matchup(request):
         "tov",
         "usg_pct",
     )
-    game_logs_df = pd.DataFrame(
-        list(game_logs_qs),
+    game_logs_df = pd.DataFrame.from_records(
+        game_logs_qs,
         columns=[
             "player_id",
             "player_name",
@@ -270,17 +285,60 @@ def fantasy_matchup(request):
         .reset_index()
     )
 
+    # league average for players playing > 15 minutes
+    league_df = averages_df[averages_df["min"] >= 15]
+    averages_df["fg_pct"] = averages_df["fgm"] / averages_df["fga"]
+    averages_df["ft_pct"] = averages_df["ftm"] / averages_df["fta"]
+    averages_df.fillna(0, inplace=True)
+    league_avg_fg_pct = league_df["fgm"].sum() / league_df["fga"].sum()
+    league_stddev_fg_pct = (league_df["fgm"] / league_df["fga"]).std()
+    league_avg_ft_pct = league_df["ftm"].sum() / league_df["fta"].sum()
+    league_stddev_ft_pct = (league_df["ftm"] / league_df["fta"]).std()
+    league_stddev_fga = league_df["fga"].std()
+    league_stddev_fta = league_df["fta"].std()
+
+    averages_df["pts_z"] = (averages_df["pts"] - league_df["pts"].mean()) / league_df[
+        "pts"
+    ].std()
+    averages_df["fg3m_z"] = (
+        averages_df["fg3m"] - league_df["fg3m"].mean()
+    ) / league_df["fg3m"].std()
+    averages_df["reb_z"] = (averages_df["reb"] - league_df["reb"].mean()) / league_df[
+        "reb"
+    ].std()
+    averages_df["ast_z"] = (averages_df["ast"] - league_df["ast"].mean()) / league_df[
+        "ast"
+    ].std()
+    averages_df["stl_z"] = (averages_df["stl"] - league_df["stl"].mean()) / league_df[
+        "stl"
+    ].std()
+    averages_df["blk_z"] = (averages_df["blk"] - league_df["blk"].mean()) / league_df[
+        "blk"
+    ].std()
+    averages_df["fg_pct_z"] = (
+        (averages_df["fg_pct"] - league_avg_fg_pct)
+        * averages_df["fga"]
+        / league_stddev_fga
+    ) / league_stddev_fg_pct
+    averages_df["ft_pct_z"] = (
+        (averages_df["ft_pct"] - league_avg_ft_pct)
+        * averages_df["fta"]
+        / league_stddev_fta
+    ) / league_stddev_ft_pct
+    averages_df["tov_z"] = (
+        0 - (averages_df["tov"] - league_df["tov"].mean()) / league_df["tov"].std()
+    )
+
+    averages_df["total_z"] = sum([averages_df[x] for x in impact_values])
+    averages_df.rename(columns={"usg_pct": "usg"}, inplace=True)
+    averages_df = averages_df.round(decimals=2)
+    averages_df.drop(["player_id", "season_year"], axis=1, inplace=True)
+
     team_1_df = averages_df[averages_df["player_name"].isin(team_1.keys())]
     team_2_df = averages_df[averages_df["player_name"].isin(team_2.keys())]
 
     team_1_df["games_played"] = team_1_df["player_name"].map(team_1)
     team_2_df["games_played"] = team_2_df["player_name"].map(team_2)
-    team_1_df["fg_pct"] = team_1_df["fgm"] / team_1_df["fga"]
-    team_1_df["ft_pct"] = team_1_df["ftm"] / team_1_df["fta"]
-    team_2_df["fg_pct"] = team_2_df["fgm"] / team_2_df["fga"]
-    team_2_df["ft_pct"] = team_2_df["ftm"] / team_2_df["fta"]
-    team_1_df.fillna(0, inplace=True)
-    team_2_df.fillna(0, inplace=True)
 
     team_totals = []
 
@@ -299,6 +357,16 @@ def fantasy_matchup(request):
         fta = ((team["fta"] * team["games_played"]).sum(),)
         ft_pct = ftm[0] / fta[0]
         tov = ((team["tov"] * team["games_played"]).sum(),)
+        pts_z = ((team["pts_z"] * team["games_played"]).mean(),)
+        fg3m_z = ((team["fg3m_z"] * team["games_played"]).mean(),)
+        reb_z = ((team["reb_z"] * team["games_played"]).mean(),)
+        ast_z = ((team["ast_z"] * team["games_played"]).mean(),)
+        stl_z = ((team["stl_z"] * team["games_played"]).mean(),)
+        blk_z = ((team["blk_z"] * team["games_played"]).mean(),)
+        fg_pct_z = ((team["fg_pct_z"] * team["games_played"]).mean(),)
+        ft_pct_z = ((team["ft_pct_z"] * team["games_played"]).mean(),)
+        tov_z = ((team["tov_z"] * team["games_played"]).mean(),)
+        total_z = ((team["total_z"] * team["games_played"]).mean(),)
         games_played = team["games_played"].sum()
 
         totals = pd.DataFrame(
@@ -321,11 +389,21 @@ def fantasy_matchup(request):
                     "fta": fta[0],
                     "ft_pct": ft_pct,
                     "tov": tov[0],
-                    "usg_pct": None,
+                    "pts_z": pts_z[0],
+                    "fg3m_z": fg3m_z[0],
+                    "reb_z": reb_z[0],
+                    "ast_z": ast_z[0],
+                    "stl_z": stl_z[0],
+                    "blk_z": blk_z[0],
+                    "fg_pct_z": fg_pct_z[0],
+                    "ft_pct_z": ft_pct_z[0],
+                    "tov_z": tov_z[0],
+                    "total_z": total_z[0],
                     "games_played": games_played,
                 }
             ]
         )
+        team.sort_values(by="total_z", ascending=False, inplace=True)
         team = pd.concat([team, totals], ignore_index=True)
         team.reset_index(inplace=True)
         cols = [
@@ -344,6 +422,16 @@ def fantasy_matchup(request):
             "fta",
             "ft_pct",
             "tov",
+            "pts_z",
+            "fg3m_z",
+            "reb_z",
+            "ast_z",
+            "stl_z",
+            "blk_z",
+            "fg_pct_z",
+            "ft_pct_z",
+            "tov_z",
+            "total_z",
             "games_played",
         ]
         team = team[cols]

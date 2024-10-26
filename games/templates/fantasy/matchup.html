@@ -4,6 +4,7 @@
     {% load bootstrap5 %}
     {% bootstrap_css %}
     {% bootstrap_javascript %}
+    {% load custom_filters %}
 </head>
 <body class="container-fluid">
     <h3 class="d-flex justify-content-around pt-3">2024-25 NBA Matchup Week {{ week }}</h3>
@@ -54,10 +55,16 @@
             <tbody>
                 {% for player in team_1 %}
                     <tr>
-                       {% for key, value in player.items %}
-                            <td>
-                                {{ value }}
-                            </td>
+                        {% for key, value in player.items %}
+                            {% if "_z" in key and key != "total_z" %}
+                                <td style="background-color: {{ value|background_color }};" >
+                                    {{ value }}
+                                </td>
+                            {% else %}
+                                <td>
+                                    {{ value }}
+                                </td>
+                            {% endif %}
                         {% endfor %}
                     </tr>
                 {% endfor %}
@@ -77,10 +84,16 @@
             <tbody>
                 {% for player in team_2 %}
                     <tr>
-                       {% for key, value in player.items %}
-                            <td>
-                                {{ value }}
-                            </td>
+                        {% for key, value in player.items %}
+                            {% if "_z" in key and key != "total_z" %}
+                                <td style="background-color: {{ value|background_color }};" >
+                                    {{ value }}
+                                </td>
+                            {% else %}
+                                <td>
+                                    {{ value }}
+                                </td>
+                            {% endif %}
                         {% endfor %}
                     </tr>
                 {% endfor %}
