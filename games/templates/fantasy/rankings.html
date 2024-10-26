@@ -10,38 +10,46 @@
 <h5>2024-25 Fantasy Rankings</h5>
 <div class="table-responsive">
 <table class="table table-bordered table-hover table-sm">
-    <thead class="table-light">
-        <tr>
-            {% if page_obj %}
-                <th>Rank</th>
-                {% for key, value in page_obj.object_list.0.items %}
-                    {% if key != 'rank' %}
-                        <th>
-                            <a href="?sort={{ key }}&direction={% if sort_by == key and direction == 'desc' %}asc{% else %}desc{% endif %}" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover" >
-                                {% if 'z' in key and key != 'total_z' %}
-                                    <form class="form-check" method="GET">
-                                      <input class="form-check-input" name="impact_values" type="checkbox" checked="{% if impact_stat in selected_impact_values %}checked{% endif %}" id="defaultCheck1" onchange="this.form.submit()">
-                                      <label class="form-check-label" for="defaultCheck1">
-                                        {{ key }}
-                                      </label>
-                                    </form>
-                                {% else %}
-                                    {{ key }}
-                                {% endif %}
-                                {% if sort_by == key %}
-                                    {% if direction == 'asc' %}
-                                        &uarr;  <!-- Up arrow for ascending -->
+    <form method="get" id="impact-form">
+        <thead class="table-light">
+            <tr>
+                {% if page_obj %}
+                    <th>Rank</th>
+                    {% for key, value in page_obj.object_list.0.items %}
+                        {% if key != 'rank' %}
+                            <th>
+                                <a href="?sort={{ key }}&direction={% if sort_by == key and direction == 'desc' %}asc{% else %}desc{% endif %}" class="link-body-emphasis link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover" >
+                                    {% if 'z' in key and key != 'total_z' %}
+                                        <div class="form-check">
+                                          <input class="form-check-input"
+                                                 name="selected_impact_values"
+                                                 type="checkbox"
+                                                 value="{{ key }}"
+                                                 {% if key in selected_impact_values %} checked="checked" {% endif %}
+                                                 id="defaultCheck_{{ key }}"
+                                                 onchange="document.getElementById('impact-form').submit()">
+                                          <label class="form-check-label" for="defaultCheck_{{ key }}">
+                                            {{ key }}
+                                          </label>
+                                        </div>
                                     {% else %}
-                                        &darr;  <!-- Down arrow for descending -->
+                                        {{ key }}
                                     {% endif %}
-                                {% endif %}
-                            </a>
-                        </th>
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
-        </tr>
-    </thead>
+                                    {% if sort_by == key %}
+                                        {% if direction == 'asc' %}
+                                            &uarr;  <!-- Up arrow for ascending -->
+                                        {% else %}
+                                            &darr;  <!-- Down arrow for descending -->
+                                        {% endif %}
+                                    {% endif %}
+                                </a>
+                            </th>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </tr>
+        </thead>
+    </form>
     <tbody>
         {% for player in page_obj %}
             <tr {% if forloop.counter|divisibleby:12 %} style="border-bottom: 2px solid gray;" {% endif %}>

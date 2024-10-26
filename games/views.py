@@ -28,12 +28,23 @@ def projections(request):
 def rankings(request):
     season_year = "2024-25"
 
-    selected_impact_values = request.GET.get("impact_values")
-    all_impact_values = ['pts_z', 'fg3m_z', 'reb_z', 'ast_z', 'stl_z', 'blk_z', 'fg_pct_z', 'ft_pct_z', 'tov_z']
+    selected_impact_values = request.GET.getlist("selected_impact_values")
+    all_impact_values = [
+        "pts_z",
+        "fg3m_z",
+        "reb_z",
+        "ast_z",
+        "stl_z",
+        "blk_z",
+        "fg_pct_z",
+        "ft_pct_z",
+        "tov_z",
+    ]
     if selected_impact_values:
         impact_values = selected_impact_values
     else:
         impact_values = all_impact_values
+        selected_impact_values = all_impact_values
 
     game_logs_qs = RawGameLog.objects.filter(season_year=season_year).values_list(
         "player_id",
@@ -108,12 +119,24 @@ def rankings(request):
     league_stddev_fga = league_df["fga"].std()
     league_stddev_fta = league_df["fta"].std()
 
-    averages_df["pts_z"] = (averages_df["pts"] - league_df["pts"].mean()) / league_df["pts"].std()
-    averages_df["fg3m_z"] = (averages_df["fg3m"] - league_df["fg3m"].mean()) / league_df["fg3m"].std()
-    averages_df["reb_z"] = (averages_df["reb"] - league_df["reb"].mean()) / league_df["reb"].std()
-    averages_df["ast_z"] = (averages_df["ast"] - league_df["ast"].mean()) / league_df["ast"].std()
-    averages_df["stl_z"] = (averages_df["stl"] - league_df["stl"].mean()) / league_df["stl"].std()
-    averages_df["blk_z"] = (averages_df["blk"] - league_df["blk"].mean()) / league_df["blk"].std()
+    averages_df["pts_z"] = (averages_df["pts"] - league_df["pts"].mean()) / league_df[
+        "pts"
+    ].std()
+    averages_df["fg3m_z"] = (
+        averages_df["fg3m"] - league_df["fg3m"].mean()
+    ) / league_df["fg3m"].std()
+    averages_df["reb_z"] = (averages_df["reb"] - league_df["reb"].mean()) / league_df[
+        "reb"
+    ].std()
+    averages_df["ast_z"] = (averages_df["ast"] - league_df["ast"].mean()) / league_df[
+        "ast"
+    ].std()
+    averages_df["stl_z"] = (averages_df["stl"] - league_df["stl"].mean()) / league_df[
+        "stl"
+    ].std()
+    averages_df["blk_z"] = (averages_df["blk"] - league_df["blk"].mean()) / league_df[
+        "blk"
+    ].std()
     averages_df["fg_pct_z"] = (
         (averages_df["fg_pct"] - league_avg_fg_pct)
         * averages_df["fga"]
@@ -124,7 +147,9 @@ def rankings(request):
         * averages_df["fta"]
         / league_stddev_fta
     ) / league_stddev_ft_pct
-    averages_df["tov_z"] = (0 - (averages_df["tov"] - league_df["tov"].mean()) / league_df["tov"].std())
+    averages_df["tov_z"] = (
+        0 - (averages_df["tov"] - league_df["tov"].mean()) / league_df["tov"].std()
+    )
 
     averages_df["total_z"] = sum([averages_df[x] for x in impact_values])
     averages_df = averages_df.round(decimals=2)
@@ -139,7 +164,7 @@ def rankings(request):
     reverse = True if direction == "desc" else False
     player_impacts = sorted(player_impacts, key=lambda x: x[sort_by], reverse=reverse)
     for i, player in enumerate(player_impacts, start=1):
-        player['rank'] = i
+        player["rank"] = i
 
     # Paginate the sorted player impacts (10 per page for example)
     paginator = Paginator(player_impacts, 100)
@@ -151,6 +176,7 @@ def rankings(request):
         "sort_by": sort_by,
         "direction": direction,
         "selected_impact_values": selected_impact_values,
+        "all_impact_values": all_impact_values,
     }
 
     return render(request, "fantasy/rankings.html", context)

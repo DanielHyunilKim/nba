@@ -33,9 +33,11 @@ def populate_raw_game_logs_task(season="2024-25", date_from=None, date_to=None):
 
 @shared_task()
 def populate_recent_game_logs_task(season="2024-25", date_from=None, date_to=None):
-    recent_date = RawGameLog.objects.aggregate(Max('game_date'))['game_date__max']
-    formatted_recent_date = datetime.datetime.strptime(recent_date, '%Y-%m-%dT%H:%M:%S')
-    date_from = (formatted_recent_date + datetime.timedelta(days=1)).strftime('%m/%d/%Y')
+    recent_date = RawGameLog.objects.aggregate(Max("game_date"))["game_date__max"]
+    formatted_recent_date = datetime.datetime.strptime(recent_date, "%Y-%m-%dT%H:%M:%S")
+    date_from = (formatted_recent_date + datetime.timedelta(days=1)).strftime(
+        "%m/%d/%Y"
+    )
 
     traditional, advanced = download_game_logs(season, date_from, date_to)
     handle_game_logs(traditional, advanced)
