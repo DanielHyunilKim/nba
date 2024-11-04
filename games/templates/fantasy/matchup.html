@@ -19,7 +19,7 @@
 
         <div class="row">
             <div class="col">
-                <label for="team-1-select">Select Team 1</label>
+                <label for="team-1-select">Team 1</label>
                 <select class="form-select" id="team-1-select" name="team_1" onchange="this.form.submit()">
                     {% for team in teams %}
                         <option value="{{ team.id }}" {% if team.id|stringformat:"s" == selected_team_1|stringformat:"s" %}selected{% endif %}>
@@ -29,7 +29,7 @@
                 </select>
             </div>
             <div class="col">
-                <label for="team-2-select">Select Team 2</label>
+                <label for="team-2-select">Team 2</label>
                 <select class="form-select" id="team-2-select" name="team_2" onchange="this.form.submit()">
                     {% for team in teams %}
                         <option value="{{ team.id }}" {% if team.id|stringformat:"s" == selected_team_2|stringformat:"s" %}selected{% endif %}>
@@ -42,7 +42,7 @@
     </form>
     <div class="table-responsive container">
         <h5>{{ team_1_name }}</h5>
-        <table class="table table-bordered table-striped table-hover">
+        <table class="table table-bordered table-hover table-sm">
             <thead class="table-light">
                 <tr>
                     {% for key, value in team_1.0.items %}
@@ -71,7 +71,7 @@
             </tbody>
         </table>
         <h5>{{ team_2_name }}</h5>
-        <table class="table table-bordered table-striped table-hover">
+        <table class="table table-bordered table-hover table-sm">
             <thead class="table-light">
                 <tr>
                     {% for key, value in team_2.0.items %}

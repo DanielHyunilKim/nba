@@ -144,10 +144,9 @@ def handle_players(players):
         for _, row in tqdm(df_pruned.iterrows())
     ]
 
-    # Use a transaction to ensure atomicity and performance
-    with transaction.atomic():
-        RawPlayer.objects.all().delete()  # Clear existing data
-        RawPlayer.objects.bulk_create(player_objs, batch_size=1000)
+    for player_obj in player_objs:
+        if len(RawPlayer.objects.filter(person_id=player_obj.person_id)) == 0:
+            player_obj.save()
 
 
 def handle_game_logs(traditional, advanced):

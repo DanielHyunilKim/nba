@@ -357,17 +357,17 @@ def fantasy_matchup(request):
         fta = ((team["fta"] * team["games_played"]).sum(),)
         ft_pct = ftm[0] / fta[0]
         tov = ((team["tov"] * team["games_played"]).sum(),)
-        pts_z = ((team["pts_z"] * team["games_played"]).mean(),)
-        fg3m_z = ((team["fg3m_z"] * team["games_played"]).mean(),)
-        reb_z = ((team["reb_z"] * team["games_played"]).mean(),)
-        ast_z = ((team["ast_z"] * team["games_played"]).mean(),)
-        stl_z = ((team["stl_z"] * team["games_played"]).mean(),)
-        blk_z = ((team["blk_z"] * team["games_played"]).mean(),)
-        fg_pct_z = ((team["fg_pct_z"] * team["games_played"]).mean(),)
-        ft_pct_z = ((team["ft_pct_z"] * team["games_played"]).mean(),)
-        tov_z = ((team["tov_z"] * team["games_played"]).mean(),)
-        total_z = ((team["total_z"] * team["games_played"]).mean(),)
         games_played = team["games_played"].sum()
+        pts_z = (pts[0] / 45 - league_df["pts"].mean()) / league_df["pts"].std()
+        fg3m_z = (fg3m[0] / 45 - league_df["fg3m"].mean()) / league_df["fg3m"].std()
+        reb_z = (reb[0] / 45 - league_df["reb"].mean()) / league_df["reb"].std()
+        ast_z = (ast[0] / 45 - league_df["ast"].mean()) / league_df["ast"].std()
+        stl_z = (stl[0] / 45 - league_df["stl"].mean()) / league_df["stl"].std()
+        blk_z = (blk[0] / 45 - league_df["blk"].mean()) / league_df["blk"].std()
+        fg_pct_z = (fg_pct - league_avg_fg_pct) / league_stddev_fg_pct
+        ft_pct_z = (ft_pct - league_avg_ft_pct) / league_stddev_ft_pct
+        tov_z = 0 - (tov[0] / 45 - league_df["tov"].mean()) / league_df["tov"].std()
+        total_z = pts_z + fg3m_z + reb_z + ast_z + stl_z + blk_z + fg_pct_z + ft_pct_z + tov_z
 
         totals = pd.DataFrame(
             [
@@ -389,16 +389,16 @@ def fantasy_matchup(request):
                     "fta": fta[0],
                     "ft_pct": ft_pct,
                     "tov": tov[0],
-                    "pts_z": pts_z[0],
-                    "fg3m_z": fg3m_z[0],
-                    "reb_z": reb_z[0],
-                    "ast_z": ast_z[0],
-                    "stl_z": stl_z[0],
-                    "blk_z": blk_z[0],
-                    "fg_pct_z": fg_pct_z[0],
-                    "ft_pct_z": ft_pct_z[0],
-                    "tov_z": tov_z[0],
-                    "total_z": total_z[0],
+                    "pts_z": pts_z,
+                    "fg3m_z": fg3m_z,
+                    "reb_z": reb_z,
+                    "ast_z": ast_z,
+                    "stl_z": stl_z,
+                    "blk_z": blk_z,
+                    "fg_pct_z": fg_pct_z,
+                    "ft_pct_z": ft_pct_z,
+                    "tov_z": tov_z,
+                    "total_z": total_z,
                     "games_played": games_played,
                 }
             ]
