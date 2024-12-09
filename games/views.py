@@ -140,13 +140,13 @@ def rankings(request):
     averages_df["fg_pct_z"] = (
         (averages_df["fg_pct"] - league_avg_fg_pct)
         * averages_df["fga"]
-        / league_stddev_fga
+        / league_stddev_fga / 2
     ) / league_stddev_fg_pct
     averages_df["ft_pct_z"] = (
         (averages_df["ft_pct"] - league_avg_ft_pct)
         * averages_df["fta"]
         / league_stddev_fta
-    ) / league_stddev_ft_pct
+    ) / league_stddev_ft_pct / 2
     averages_df["tov_z"] = (
         0 - (averages_df["tov"] - league_df["tov"].mean()) / league_df["tov"].std()
     )
@@ -319,12 +319,12 @@ def fantasy_matchup(request):
         (averages_df["fg_pct"] - league_avg_fg_pct)
         * averages_df["fga"]
         / league_stddev_fga
-    ) / league_stddev_fg_pct
+    ) / league_stddev_fg_pct / 2
     averages_df["ft_pct_z"] = (
         (averages_df["ft_pct"] - league_avg_ft_pct)
         * averages_df["fta"]
         / league_stddev_fta
-    ) / league_stddev_ft_pct
+    ) / league_stddev_ft_pct / 2
     averages_df["tov_z"] = (
         0 - (averages_df["tov"] - league_df["tov"].mean()) / league_df["tov"].std()
     )

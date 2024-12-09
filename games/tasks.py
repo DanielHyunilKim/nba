@@ -69,3 +69,8 @@ def populate_fantasy_projection_task(season="2024-25"):
 @shared_task()
 def populate_projection_value(season="2023-24"):
     handle_projection_values(season)
+
+
+@shared_task()
+def populate_play_by_play():
+    game_ids = "game_id"
