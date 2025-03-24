@@ -152,6 +152,7 @@ class Game(TimeStampedModel):
     season_year = models.CharField(max_length=10)
     week_number = models.IntegerField()
     game_date = models.CharField()
+    game_id = models.CharField()
     home_team = models.CharField()
     home_team_id = models.IntegerField()
     away_team = models.CharField()

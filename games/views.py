@@ -3,6 +3,7 @@ from games.models import FantasyProjection, ProjectionValue, RawGameLog, Fantasy
 from django.core.paginator import Paginator
 from games.utils import get_game_counts
 import pandas as pd
+import datetime
 
 
 # Create your views here.
@@ -46,7 +47,13 @@ def rankings(request):
         impact_values = all_impact_values
         selected_impact_values = all_impact_values
 
-    game_logs_qs = RawGameLog.objects.filter(season_year=season_year).values_list(
+    past_days = 60
+    target_date = None
+    if past_days:
+        ft = "%Y-%m-%dT%H:%M:%S"
+        target_date = (datetime.datetime.now() - datetime.timedelta(days=past_days)).strftime(ft)
+
+    game_logs_qs = RawGameLog.objects.filter(season_year=season_year, game_date__gt=target_date).values_list(
         "player_id",
         "player_name",
         "season_year",
@@ -85,6 +92,7 @@ def rankings(request):
             "usg_pct",
         ],
     )
+
     averages_df = (
         game_logs_df.groupby(["player_id", "player_name", "season_year"])
         .agg(
@@ -107,8 +115,8 @@ def rankings(request):
         .reset_index()
     )
 
-    # league average for players playing > 15 minutes
-    league_df = averages_df[averages_df["min"] >= 15]
+    # league average for players playing > 20 minutes
+    league_df = averages_df[averages_df["min"] >= 20]
     averages_df["fg_pct"] = averages_df["fgm"] / averages_df["fga"]
     averages_df["ft_pct"] = averages_df["ftm"] / averages_df["fta"]
     averages_df.fillna(0, inplace=True)

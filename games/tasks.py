@@ -5,6 +5,7 @@ from games.db_services import (
     handle_fantasy_projections,
     handle_projection_values,
     handle_schedule,
+    update_team_game_counts,
 )
 from games.projection_services import simple_regression
 from celery import shared_task
@@ -72,5 +73,6 @@ def populate_projection_value(season="2023-24"):
 
 
 @shared_task()
-def populate_play_by_play():
-    game_ids = "game_id"
+def populate_team_game_counts(season="2024-25"):
+    for i in range(24):
+        update_team_game_counts(season, i)

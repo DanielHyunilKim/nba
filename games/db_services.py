@@ -148,6 +148,10 @@ def handle_players(players):
         if len(RawPlayer.objects.filter(person_id=player_obj.person_id)) == 0:
             player_obj.save()
 
+    # Use a transaction to ensure atomicity and performance
+    # with transaction.atomic():
+    #     RawPlayer.objects.bulk_create(player_objs, batch_size=1000)
+
 
 def handle_game_logs(traditional, advanced):
 
@@ -277,6 +281,7 @@ def handle_schedule(schedule_json):
             season_year=season_year,
             week_number=game["weekNumber"],
             game_date=game["gameDateEst"],
+            game_id=game["gameId"],
             home_team=game["homeTeam"]["teamTricode"],
             home_team_id=game["homeTeam"]["teamId"],
             away_team=game["awayTeam"]["teamTricode"],
